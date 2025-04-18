@@ -6,149 +6,145 @@
   <title>Stories</title>
   <style>
     body {
-      background-color: #121212;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-    }
-
-    h1 {
-      color: #00ffcc;
-      text-align: center;
-      margin-top: 40px;
+      font-family: Arial, sans-serif;
+      background-color: #1e1e1e;
+      color: white;
     }
 
     .sidebar {
-      width: 250px;
-      background-color: #1e1e1e;
+      width: 200px;
+      background-color: #111;
+      height: 100vh;
       position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
       padding-top: 20px;
-      color: white;
     }
 
     .sidebar a {
       display: block;
-      color: #ffffff;
-      padding: 10px 20px;
+      padding: 12px;
+      color: white;
       text-decoration: none;
-      font-size: 18px;
     }
 
     .sidebar a:hover {
-      background-color: #444444;
+      background-color: #575757;
     }
 
     .content {
-      margin-left: 260px;
+      margin-left: 220px;
       padding: 20px;
-    }
-
-    button {
-      background-color: #00ffcc;
-      color: #000;
-      font-weight: bold;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s;
-      margin-top: 20px;
-    }
-
-    button:hover {
-      background-color: #00ddb0;
-    }
-
-    .story-form {
-      max-width: 500px;
-      margin: 30px auto;
-      background-color: #333;
-      padding: 20px;
-      border-radius: 8px;
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .story-form input, .story-form textarea {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      width: 100%;
-    }
-
-    .story-form input, .story-form textarea {
-      background-color: #1e1e1e;
-      color: #fff;
-    }
-
-    .story-container {
-      margin-top: 40px;
     }
 
     .story {
-      background-color: #333;
+      background-color: #2c2c2c;
       padding: 15px;
       margin-bottom: 20px;
-      border-radius: 8px;
-      color: white;
-      text-align: left;
+      border-radius: 10px;
     }
 
     .story h3 {
-      margin: 0;
-      color: #00ffcc;
+      margin-top: 0;
     }
 
-    .story p {
-      margin: 10px 0;
+    .btn {
+      background-color: #4caf50;
+      color: white;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
     }
 
-    .story span {
-      color: #bbb;
+    .modal {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #333;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 2;
+      width: 80%;
+      max-width: 400px;
     }
 
+    .modal input, .modal textarea {
+      width: 100%;
+      margin: 5px 0;
+      padding: 8px;
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #444;
+      border-radius: 5px;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1;
+    }
+
+    .comments {
+      margin-top: 10px;
+      padding-left: 10px;
+      border-left: 2px solid #555;
+    }
+
+    .comment {
+      margin-bottom: 5px;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Sidebar -->
   <div class="sidebar">
-    <a href="index.html">Home</a>
-    <a href="stories.html">Stories</a>
-    <a href="homework.html">Homework</a>
-    <a href="notes.html">Notes</a>
+    <a href="Test.html">Home</a>
   </div>
 
-  <!-- Content Area -->
   <div class="content">
-    <h1>Stories</h1>
-    <button id="createStoryButton">Create Story</button>
-
-    <!-- Create Story Form -->
-    <div class="story-form" id="storyForm">
-      <input type="text" id="username" placeholder="Your Name" required />
-      <input type="text" id="title" placeholder="Story Title" required />
-      <textarea id="story" rows="6" placeholder="Your Story..." required></textarea>
-      <button id="submitStoryButton">Submit Story</button>
+    <div class="top-bar">
+      <h1>Latest Stories</h1>
+      <button class="btn" onclick="toggleModal()">Create Story</button>
     </div>
 
-    <div class="story-container" id="storyContainer">
-      <!-- Stories will appear here -->
-    </div>
+    <div id="stories"></div>
   </div>
 
-  <!-- Firebase SDK -->
+  <div class="overlay" id="overlay" onclick="toggleModal(); toggleCommentModal()"></div>
+
+  <!-- Create Story Modal -->
+  <div class="modal" id="storyModal">
+    <h3>Create a Story</h3>
+    <input type="text" id="storyAuthor" placeholder="Your Name" />
+    <input type="text" id="storyTitle" placeholder="Story Title" />
+    <textarea id="storyText" rows="4" placeholder="Write your story here..."></textarea>
+    <button class="btn" onclick="submitStory()">Submit</button>
+  </div>
+
+  <!-- Comment Modal -->
+  <div class="modal" id="commentModal">
+    <h3>Add Comment</h3>
+    <input type="text" id="commentName" placeholder="Your Name" />
+    <textarea id="commentText" rows="2" placeholder="Write your comment here..."></textarea>
+    <button class="btn" onclick="submitComment()">Submit Comment</button>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, doc, arrayUnion, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCnmjO1XsJKPGJp23eUvRTXYsHULKICGE0",
       authDomain: "quthentication.firebaseapp.com",
@@ -161,64 +157,87 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Show or hide create story form
-    const createStoryButton = document.getElementById("createStoryButton");
-    const storyForm = document.getElementById("storyForm");
+    const overlay = document.getElementById("overlay");
+    const storyModal = document.getElementById("storyModal");
+    const commentModal = document.getElementById("commentModal");
 
-    createStoryButton.addEventListener("click", () => {
-      storyForm.style.display = storyForm.style.display === "none" ? "flex" : "none";
-    });
+    let currentCommentDocId = null;
 
-    // Submit a story
-    const submitStoryButton = document.getElementById("submitStoryButton");
-    submitStoryButton.addEventListener("click", async (e) => {
-      e.preventDefault();
+    function toggleModal() {
+      storyModal.style.display = storyModal.style.display === "block" ? "none" : "block";
+      overlay.style.display = overlay.style.display === "block" ? "none" : "block";
+    }
 
-      const name = document.getElementById("username").value;
-      const title = document.getElementById("title").value;
-      const story = document.getElementById("story").value;
+    function toggleCommentModal(docId) {
+      if (docId) currentCommentDocId = docId;
+      commentModal.style.display = commentModal.style.display === "block" ? "none" : "block";
+      overlay.style.display = overlay.style.display === "block" ? "none" : "block";
+    }
 
-      try {
+    async function submitStory() {
+      const title = document.getElementById("storyTitle").value;
+      const story = document.getElementById("storyText").value;
+      const author = document.getElementById("storyAuthor").value;
+
+      if (title && story && author) {
         await addDoc(collection(db, "stories"), {
-          name,
-          title,
-          story,
-          timestamp: new Date()
+          title, story, author,
+          likes: 0,
+          comments: []
         });
-
-        alert("Story posted successfully!");
-        storyForm.reset();
-        storyForm.style.display = "none";
-        loadStories(); // Reload stories after submitting
-      } catch (error) {
-        console.error("Error posting story:", error);
-        alert("Failed to post story.");
+        toggleModal();
+        window.location.reload();
       }
-    });
+    }
 
-    // Load stories from Firestore
+    async function submitComment() {
+      const name = document.getElementById("commentName").value;
+      const text = document.getElementById("commentText").value;
+
+      if (name && text && currentCommentDocId) {
+        const ref = doc(db, "stories", currentCommentDocId);
+        await updateDoc(ref, {
+          comments: arrayUnion({ name, text })
+        });
+        toggleCommentModal();
+        window.location.reload();
+      }
+    }
+
+    async function likeStory(docId) {
+      const ref = doc(db, "stories", docId);
+      await updateDoc(ref, { likes: increment(1) });
+      window.location.reload();
+    }
+
     async function loadStories() {
-      const querySnapshot = await getDocs(collection(db, "stories"));
-      const storyContainer = document.getElementById("storyContainer");
-      storyContainer.innerHTML = ""; // Clear existing stories
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const storyDiv = document.createElement("div");
-        storyDiv.classList.add("story");
-
-        storyDiv.innerHTML = `
-          <h3>${data.title}</h3>
-          <p>${data.story}</p>
-          <span>By ${data.name} on ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</span>
+      const storiesEl = document.getElementById("stories");
+      const snapshot = await getDocs(collection(db, "stories"));
+      snapshot.forEach(docSnap => {
+        const story = docSnap.data();
+        const el = document.createElement("div");
+        el.className = "story";
+        el.innerHTML = `
+          <h3>${story.title}</h3>
+          <p><strong>By:</strong> ${story.author}</p>
+          <p>${story.story}</p>
+          <button class="btn" onclick="likeStory('${docSnap.id}')">Like (${story.likes})</button>
+          <button class="btn" onclick="toggleCommentModal('${docSnap.id}')">Comment</button>
+          <div class="comments">
+            ${story.comments.map(c => `<div class="comment"><strong>${c.name}:</strong> ${c.text}</div>`).join("")}
+          </div>
         `;
-
-        storyContainer.appendChild(storyDiv);
+        storiesEl.appendChild(el);
       });
     }
 
-    loadStories(); // Initial load of stories
-  </script>
+    window.toggleModal = toggleModal;
+    window.toggleCommentModal = toggleCommentModal;
+    window.submitStory = submitStory;
+    window.submitComment = submitComment;
+    window.likeStory = likeStory;
 
+    loadStories();
+  </script>
 </body>
-</html>
+  </html>
