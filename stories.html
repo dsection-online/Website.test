@@ -3,68 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Post a Story</title>
+  <title>Stories</title>
   <style>
     body {
       background-color: #121212;
       color: #ffffff;
       font-family: Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
+      margin: 0;
+      padding: 0;
     }
 
     h1 {
       color: #00ffcc;
+      text-align: center;
+      margin-top: 40px;
     }
 
-    form {
-      max-width: 400px;
-      margin: 30px auto;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    input, textarea, button {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-
-    input, textarea {
+    .sidebar {
+      width: 250px;
       background-color: #1e1e1e;
-      color: #fff;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      padding-top: 20px;
+      color: white;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #ffffff;
+      padding: 10px 20px;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    .sidebar a:hover {
+      background-color: #444444;
+    }
+
+    .content {
+      margin-left: 260px;
+      padding: 20px;
     }
 
     button {
       background-color: #00ffcc;
       color: #000;
       font-weight: bold;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s;
+      margin-top: 20px;
     }
 
     button:hover {
       background-color: #00ddb0;
     }
+
+    .story-form {
+      max-width: 500px;
+      margin: 30px auto;
+      background-color: #333;
+      padding: 20px;
+      border-radius: 8px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .story-form input, .story-form textarea {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    .story-form input, .story-form textarea {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+
+    .story-container {
+      margin-top: 40px;
+    }
+
+    .story {
+      background-color: #333;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      color: white;
+      text-align: left;
+    }
+
+    .story h3 {
+      margin: 0;
+      color: #00ffcc;
+    }
+
+    .story p {
+      margin: 10px 0;
+    }
+
+    .story span {
+      color: #bbb;
+    }
+
   </style>
 </head>
 <body>
-  <h1>Post a Story</h1>
-  <form id="storyForm">
-    <input type="text" id="username" placeholder="Your Name" required />
-    <input type="text" id="title" placeholder="Story Title" required />
-    <textarea id="story" rows="6" placeholder="Your Story..." required></textarea>
-    <button type="submit">Submit Story</button>
-  </form>
 
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <a href="index.html">Home</a>
+    <a href="stories.html">Stories</a>
+    <a href="homework.html">Homework</a>
+    <a href="notes.html">Notes</a>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content">
+    <h1>Stories</h1>
+    <button id="createStoryButton">Create Story</button>
+
+    <!-- Create Story Form -->
+    <div class="story-form" id="storyForm">
+      <input type="text" id="username" placeholder="Your Name" required />
+      <input type="text" id="title" placeholder="Story Title" required />
+      <textarea id="story" rows="6" placeholder="Your Story..." required></textarea>
+      <button id="submitStoryButton">Submit Story</button>
+    </div>
+
+    <div class="story-container" id="storyContainer">
+      <!-- Stories will appear here -->
+    </div>
+  </div>
+
+  <!-- Firebase SDK -->
   <script type="module">
-    // Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    // Your Firebase config
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCnmjO1XsJKPGJp23eUvRTXYsHULKICGE0",
       authDomain: "quthentication.firebaseapp.com",
@@ -74,13 +158,20 @@
       appId: "1:802287898082:web:9a48d95de178ae01767dbb"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Submit form
-    const form = document.getElementById("storyForm");
-    form.addEventListener("submit", async (e) => {
+    // Show or hide create story form
+    const createStoryButton = document.getElementById("createStoryButton");
+    const storyForm = document.getElementById("storyForm");
+
+    createStoryButton.addEventListener("click", () => {
+      storyForm.style.display = storyForm.style.display === "none" ? "flex" : "none";
+    });
+
+    // Submit a story
+    const submitStoryButton = document.getElementById("submitStoryButton");
+    submitStoryButton.addEventListener("click", async (e) => {
       e.preventDefault();
 
       const name = document.getElementById("username").value;
@@ -96,12 +187,38 @@
         });
 
         alert("Story posted successfully!");
-        form.reset();
+        storyForm.reset();
+        storyForm.style.display = "none";
+        loadStories(); // Reload stories after submitting
       } catch (error) {
         console.error("Error posting story:", error);
         alert("Failed to post story.");
       }
     });
+
+    // Load stories from Firestore
+    async function loadStories() {
+      const querySnapshot = await getDocs(collection(db, "stories"));
+      const storyContainer = document.getElementById("storyContainer");
+      storyContainer.innerHTML = ""; // Clear existing stories
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const storyDiv = document.createElement("div");
+        storyDiv.classList.add("story");
+
+        storyDiv.innerHTML = `
+          <h3>${data.title}</h3>
+          <p>${data.story}</p>
+          <span>By ${data.name} on ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</span>
+        `;
+
+        storyContainer.appendChild(storyDiv);
+      });
+    }
+
+    loadStories(); // Initial load of stories
   </script>
+
 </body>
 </html>
