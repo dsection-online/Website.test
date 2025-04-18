@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Story Board</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js"></script>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .sidebar {
+      width: 200px;
+      background-color: #1e1e1e;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+      border-right: 1px solid #333;
+    }
+
+    .sidebar h2 {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      margin-bottom: 10px;
+      padding: 8px;
+      border-radius: 4px;
+      background-color: #2a2a2a;
+      transition: background-color 0.2s;
+    }
+
+    .sidebar a:hover {
+      background-color: #3a3a3a;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .story-box {
+      background: #1f1f1f;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #333;
+    }
+
+    .story-box input, .story-box textarea {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: #2b2b2b;
+      border: none;
+      color: white;
+      border-radius: 5px;
+    }
+
+    .story-box button {
+      margin-top: 10px;
+      padding: 10px 15px;
+      background-color: #3f51b5;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .posted-story {
+      background-color: #1a1a1a;
+      border: 1px solid #333;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sidebar">
+    <h2>Menu</h2>
+    <a href="Test.html">Home</a>
+  </div>
+
+  <div class="main-content">
+    <h1>Share Your Story</h1>
+
+    <div class="story-box">
+      <input type="text" id="name" placeholder="Your name">
+      <input type="text" id="title" placeholder="Story title">
+      <textarea id="story" rows="5" placeholder="Write your story..."></textarea>
+      <button onclick="submitStory()">Post</button>
+    </div>
+
+    <h2>Latest Stories</h2>
+    <div id="story-list"></div>
+  </div>
+
+  <script type="module">
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnmjO1XsJKPGJp23eUvRTXYsHULKICGE0",
+      authDomain: "quthentication.firebaseapp.com",
+      projectId: "quthentication",
+      storageBucket: "quthentication.firebasestorage.app",
+      messagingSenderId: "802287898082",
+      appId: "1:802287898082:web:9a48d95de178ae01767dbb"
+    };
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function submitStory() {
+      const name = document.getElementById("name").value.trim();
+      const title = document.getElementById("title").value.trim();
+      const story = document.getElementById("story").value.trim();
+
+      if (name && title && story) {
+        await addDoc(collection(db, "stories"), {
+          name,
+          title,
+          story,
+          timestamp: new Date()
+        });
+
+        document.getElementById("name").value = "";
+        document.getElementById("title").value = "";
+        document.getElementById("story").value = "";
+
+        loadStories();
+      } else {
+        alert("Please fill all fields.");
+      }
+    }
+
+    async function loadStories() {
+      const storyList = document.getElementById("story-list");
+      storyList.innerHTML = "";
+
+      const q = query(collection(db, "stories"), orderBy("timestamp", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const div = document.createElement("div");
+        div.className = "posted-story";
+        div.innerHTML = `<strong>${data.title}</strong><br><em>by ${data.name}</em><p>${data.story}</p>`;
+        storyList.appendChild(div);
+      });
+    }
+
+    loadStories();
+  </script>
+
+</body>
+</html>
